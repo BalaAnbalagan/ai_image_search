@@ -5,8 +5,8 @@
 This project demonstrates AI-powered image search with support for multiple embedding providers. The implementation generates embeddings for images and text queries, then computes cosine similarity scores to measure semantic relationships between visual and textual content.
 
 **Supported Providers:**
-- **Cohere embed-v4.0** (Recommended - matches assignment requirements)
-- **OpenAI text-embedding-3-large** (Alternative option)
+- **Cohere embed-v4.0** (Multimodal - supports both images and text)
+- **OpenAI text-embedding-3-large** (Text-only - not used for image embeddings)
 
 ## Features
 
