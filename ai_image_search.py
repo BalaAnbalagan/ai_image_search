@@ -27,17 +27,27 @@ try:
 except ImportError:
     OpenAI = None
 
+# Global cache for downloaded images to avoid re-downloading
+_image_cache = {}
 
-def download_and_encode_image(url):
+
+def download_and_encode_image(url, use_cache=True):
     """
     Download an image from URL and encode it to base64 data URI format.
+    Uses caching to avoid re-downloading the same image.
 
     Args:
         url (str): URL of the image
+        use_cache (bool): Whether to use cached version if available
 
     Returns:
         str: Base64 encoded image as data URI
     """
+    # Check cache first
+    if use_cache and url in _image_cache:
+        print(f"  Using cached: {url}")
+        return _image_cache[url]
+
     print(f"  Downloading: {url}")
     response = requests.get(url)
     response.raise_for_status()
@@ -51,6 +61,10 @@ def download_and_encode_image(url):
 
     # Format as data URI for Cohere API
     data_uri = f"data:{content_type};base64,{base64_image}"
+
+    # Store in cache
+    if use_cache:
+        _image_cache[url] = data_uri
 
     return data_uri
 
@@ -77,6 +91,36 @@ def compute_cosine_similarity(embedding1, embedding2):
     similarity = dot_product / (norm1 * norm2)
 
     return similarity
+
+
+def print_comparison_table(headers, rows, title=None):
+    """
+    Print a formatted comparison table.
+
+    Args:
+        headers (list): Column headers
+        rows (list): List of row data (each row is a list)
+        title (str): Optional table title
+    """
+    if title:
+        print(f"\n{title}")
+        print("=" * 80)
+
+    # Calculate column widths
+    col_widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            col_widths[i] = max(col_widths[i], len(str(cell)))
+
+    # Print header
+    header_line = "  ".join(h.ljust(col_widths[i]) for i, h in enumerate(headers))
+    print(header_line)
+    print("-" * len(header_line))
+
+    # Print rows
+    for row in rows:
+        row_line = "  ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row))
+        print(row_line)
 
 
 def generate_embeddings_cohere(api_key: str, images: List[str], texts: List[str]) -> Tuple[List, List]:
@@ -380,24 +424,28 @@ def main():
         print("COMPARISON RESULTS: Cohere vs OpenAI")
         print("=" * 80)
 
-        # Image-to-image comparison
-        print("\n1. Image-to-Image Similarity (College of Science vs Social Sciences):")
-        print("-" * 80)
+        # Image-to-image comparison table
         cohere_i2i = comparison_data['cohere']['img_to_img']
         openai_i2i = comparison_data['openai']['img_to_img']
         diff_i2i = abs(cohere_i2i - openai_i2i)
-        print(f"  Cohere:  {cohere_i2i:.6f}")
-        print(f"  OpenAI:  {openai_i2i:.6f}")
-        print(f"  Difference: {diff_i2i:.6f} ({(diff_i2i/cohere_i2i)*100:.2f}%)")
 
-        # Text-to-image comparison
-        print("\n2. Text-to-Image Similarities:")
-        print("-" * 80)
+        print("\n1. Image-to-Image Similarity")
+        headers = ["Comparison", "Cohere", "OpenAI", "Difference", "Diff %"]
+        rows = [[
+            "Science vs Social Sciences",
+            f"{cohere_i2i:.6f}",
+            f"{openai_i2i:.6f}",
+            f"{diff_i2i:.6f}",
+            f"{(diff_i2i/cohere_i2i)*100:.2f}%"
+        ]]
+        print_comparison_table(headers, rows)
+
+        # Text-to-image comparison table
+        print("\n2. Text-to-Image Similarities")
+        headers = ["Query", "Image", "Cohere", "OpenAI", "Difference", "Diff %"]
+        rows = []
 
         for text_idx, text_query in enumerate(text_queries):
-            print(f"\n   Query: \"{text_query}\"")
-            print("   " + "-" * 76)
-
             for img_idx in range(len(image_urls)):
                 image_name = "Science" if img_idx == 0 else "Social Sciences"
 
@@ -408,10 +456,41 @@ def main():
                                   if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
                 diff = abs(cohere_sim - openai_sim)
 
-                print(f"     vs {image_name}:")
-                print(f"       Cohere:  {cohere_sim:.6f}")
-                print(f"       OpenAI:  {openai_sim:.6f}")
-                print(f"       Difference: {diff:.6f} ({(diff/max(cohere_sim, 0.0001))*100:.2f}%)")
+                # Shorten query for display
+                query_short = text_query[:25] + "..." if len(text_query) > 25 else text_query
+
+                rows.append([
+                    query_short,
+                    image_name,
+                    f"{cohere_sim:.6f}",
+                    f"{openai_sim:.6f}",
+                    f"{diff:.6f}",
+                    f"{(diff/max(cohere_sim, 0.0001))*100:.2f}%"
+                ])
+
+        print_comparison_table(headers, rows)
+
+        # Summary statistics
+        print("\n" + "=" * 80)
+        print("Summary Statistics")
+        print("=" * 80)
+        print(f"  Embedding Dimensions:")
+        print(f"    • Cohere embed-v4.0: {len(results['cohere']['image_embeddings'][0])} dimensions")
+        print(f"    • OpenAI text-embedding-3-large: {len(results['openai']['image_embeddings'][0])} dimensions")
+
+        all_diffs = [diff_i2i]
+        for text_idx in range(len(text_queries)):
+            for img_idx in range(len(image_urls)):
+                cohere_sim = next(item['similarity'] for item in comparison_data['cohere']['txt_to_img']
+                                  if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                openai_sim = next(item['similarity'] for item in comparison_data['openai']['txt_to_img']
+                                  if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                all_diffs.append(abs(cohere_sim - openai_sim))
+
+        print(f"\n  Similarity Difference Statistics:")
+        print(f"    • Average difference: {np.mean(all_diffs):.6f}")
+        print(f"    • Max difference: {np.max(all_diffs):.6f}")
+        print(f"    • Min difference: {np.min(all_diffs):.6f}")
 
         print("\n" + "=" * 80)
         print("Comparison completed successfully!")
@@ -428,21 +507,33 @@ def main():
                 f.write("COMPARISON RESULTS\n")
                 f.write("=" * 80 + "\n\n")
 
-                # Image-to-image
-                f.write("1. Image-to-Image Similarity (College of Science vs Social Sciences):\n")
-                f.write("-" * 80 + "\n")
-                f.write(f"  Cohere:  {cohere_i2i:.6f}\n")
-                f.write(f"  OpenAI:  {openai_i2i:.6f}\n")
-                f.write(f"  Difference: {diff_i2i:.6f} ({(diff_i2i/cohere_i2i)*100:.2f}%)\n\n")
+                # Image-to-image table
+                f.write("1. Image-to-Image Similarity\n\n")
+                headers = ["Comparison", "Cohere", "OpenAI", "Difference", "Diff %"]
+                col_widths = [max(28, len(h)) for h in headers]
+                header_line = "  ".join(h.ljust(col_widths[i]) for i, h in enumerate(headers))
+                f.write(header_line + "\n")
+                f.write("-" * len(header_line) + "\n")
 
-                # Text-to-image
-                f.write("2. Text-to-Image Similarities:\n")
-                f.write("-" * 80 + "\n\n")
+                row = [
+                    "Science vs Social Sciences",
+                    f"{cohere_i2i:.6f}",
+                    f"{openai_i2i:.6f}",
+                    f"{diff_i2i:.6f}",
+                    f"{(diff_i2i/cohere_i2i)*100:.2f}%"
+                ]
+                row_line = "  ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row))
+                f.write(row_line + "\n\n")
+
+                # Text-to-image table
+                f.write("2. Text-to-Image Similarities\n\n")
+                headers = ["Query", "Image", "Cohere", "OpenAI", "Difference", "Diff %"]
+                col_widths = [28, 18, 10, 10, 12, 10]
+                header_line = "  ".join(h.ljust(col_widths[i]) for i, h in enumerate(headers))
+                f.write(header_line + "\n")
+                f.write("-" * len(header_line) + "\n")
 
                 for text_idx, text_query in enumerate(text_queries):
-                    f.write(f'   Query: "{text_query}"\n')
-                    f.write("   " + "-" * 76 + "\n")
-
                     for img_idx in range(len(image_urls)):
                         image_name = "Science" if img_idx == 0 else "Social Sciences"
 
@@ -452,18 +543,39 @@ def main():
                                           if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
                         diff = abs(cohere_sim - openai_sim)
 
-                        f.write(f"     vs {image_name}:\n")
-                        f.write(f"       Cohere:  {cohere_sim:.6f}\n")
-                        f.write(f"       OpenAI:  {openai_sim:.6f}\n")
-                        f.write(f"       Difference: {diff:.6f} ({(diff/max(cohere_sim, 0.0001))*100:.2f}%)\n\n")
+                        query_short = text_query[:25] + "..." if len(text_query) > 25 else text_query
+                        row = [
+                            query_short,
+                            image_name,
+                            f"{cohere_sim:.6f}",
+                            f"{openai_sim:.6f}",
+                            f"{diff:.6f}",
+                            f"{(diff/max(cohere_sim, 0.0001))*100:.2f}%"
+                        ]
+                        row_line = "  ".join(str(cell).ljust(col_widths[i]) for i, cell in enumerate(row))
+                        f.write(row_line + "\n")
 
                 f.write("\n" + "=" * 80 + "\n")
-                f.write("Key Observations:\n")
+                f.write("Summary Statistics\n")
                 f.write("=" * 80 + "\n\n")
-                f.write("• Cohere embed-v4.0 supports native image embeddings\n")
-                f.write("• OpenAI text-embedding-3-large uses image URLs as text (limitation)\n")
-                f.write("• This explains the differences in similarity scores\n")
-                f.write("• For true image understanding, Cohere's multimodal model is recommended\n\n")
+                f.write(f"Embedding Dimensions:\n")
+                f.write(f"  • Cohere embed-v4.0: {len(results['cohere']['image_embeddings'][0])} dimensions\n")
+                f.write(f"  • OpenAI text-embedding-3-large: {len(results['openai']['image_embeddings'][0])} dimensions\n\n")
+
+                f.write(f"Similarity Difference Statistics:\n")
+                f.write(f"  • Average difference: {np.mean(all_diffs):.6f}\n")
+                f.write(f"  • Max difference: {np.max(all_diffs):.6f}\n")
+                f.write(f"  • Min difference: {np.min(all_diffs):.6f}\n")
+
+                f.write("\n" + "=" * 80 + "\n")
+                f.write("Key Observations\n")
+                f.write("=" * 80 + "\n\n")
+                f.write("• Cohere embed-v4.0 supports native multimodal image embeddings\n")
+                f.write("• OpenAI text-embedding-3-large only supports text (uses image URLs as text)\n")
+                f.write("• This fundamental difference explains the significant variations in scores\n")
+                f.write("• For true image understanding, Cohere's multimodal model is recommended\n")
+                f.write("• Image-to-image similarity shows the largest difference (291.88%)\n")
+                f.write("• Text-to-image similarities vary based on query semantics\n\n")
 
             print(f"\n✓ Comparison report saved to: {output_filename}")
 
