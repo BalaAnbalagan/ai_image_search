@@ -6,3 +6,10 @@ python-dotenv>=1.0.0   # For secure .env file management
 # API Provider SDKs (install based on your chosen provider)
 cohere>=5.0.0          # For Cohere API support
 openai>=1.0.0          # For OpenAI API support
+
+# Jupyter Notebook dependencies
+jupyter>=1.0.0         # For running interactive notebooks
+pandas>=2.0.0          # For data analysis and table display
+pillow>=10.0.0         # For image processing and display
+ipython>=8.0.0         # For enhanced interactive shell
+ipywidgets>=8.0.0      # For interactive widgets in notebooks

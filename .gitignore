@@ -24,6 +24,7 @@ wheels/
 venv/
 env/
 ENV/
+ai_image_search_env/
 
 # IDE
 .vscode/
@@ -41,6 +42,25 @@ secrets.txt
 output_*.txt
 comparison_report.txt
 comparison_report.html
+assignment_report.html
+canvas_submission.txt
+example_output.txt
+fix_base64.py
+generate_pdf.py
+
+# Claude/AI conversation files
+.claude/
+
+# Extra guides (keep only main README)
+API_CONFIGURATION_GUIDE.md
+COMPARISON_MODE_GUIDE.md
+HOW_TO_SUBMIT.md
+IMAGE_SEARCH_GUIDE.md
+NOTEBOOK_GUIDE.md
+SUBMISSION_GUIDE.md
+
+# Legacy scripts
+ai_image_search.py
 
 # OS
 .DS_Store
@@ -50,4 +70,6 @@ Thumbs.db
 *.jpg
 *.jpeg
 *.png
-!example_images/
+!images/*.jpg
+!images/*.jpeg
+!images/*.png
