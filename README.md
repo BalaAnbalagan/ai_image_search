@@ -81,14 +81,6 @@ jupyter notebook ai_image_search.ipynb
 - Interactive search with ranked results
 - Educational explanations of embedding concepts
 
-#### Command Line
-
-For quick testing:
-
-```bash
-python3 ai_image_search.py
-```
-
 ## Project Structure
 
 ```
