@@ -28,14 +28,26 @@ Select option **3** to run comparison mode.
 
 ## Output Files
 
-Comparison mode generates:
+Comparison mode generates **two report formats**:
 
-- `comparison_report.txt` - Detailed comparison showing:
-  - Image-to-image similarity from both providers
-  - Text-to-image similarities from both providers
-  - Absolute differences between scores
-  - Percentage differences
-  - Key observations about the differences
+### 1. Text Report (`comparison_report.txt`)
+- Plain text format with tables
+- Image-to-image similarity from both providers
+- Text-to-image similarities from both providers
+- Absolute differences between scores
+- Percentage differences
+- Summary statistics
+- Key observations
+
+### 2. HTML Report (`comparison_report.html`) ⭐ **Submission Ready**
+- **Professional format with embedded images**
+- Visual display of both test images
+- Styled tables and statistics
+- Methodology section
+- Summary statistics in grid cards
+- Key observations highlighted
+- **Perfect for assignment submission**
+- **Print to PDF directly from browser**
 
 ## Sample Output
 
@@ -95,6 +107,27 @@ python3 ai_image_search.py
 # When prompted, select option 3
 Enter your choice (1, 2, or 3): 3
 ```
+
+After completion, you'll see:
+```
+✓ Comparison report saved to: comparison_report.txt
+✓ HTML comparison report saved to: comparison_report.html
+  → Open in browser and print to PDF for submission
+```
+
+## Converting HTML to PDF for Submission
+
+1. Open `comparison_report.html` in your web browser
+2. Press `Cmd+P` (Mac) or `Ctrl+P` (Windows/Linux)
+3. Select "Save as PDF" as the destination
+4. Click "Save"
+5. Submit the PDF to Canvas
+
+**The HTML report includes:**
+- Both test images displayed visually
+- All comparison results in styled tables
+- Professional formatting suitable for academic submission
+- Timestamp showing when the analysis was run
 
 ## Single Provider Mode
 
