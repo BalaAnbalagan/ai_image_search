@@ -18,11 +18,13 @@ Select option **3** to run comparison mode.
 
 ## What Comparison Mode Does
 
-1. **Downloads images once** - Efficient single download for both APIs
+1. **Downloads images once** - Efficient caching prevents duplicate downloads
 2. **Runs Cohere API** - Generates embeddings using Cohere embed-v4.0
 3. **Runs OpenAI API** - Generates embeddings using OpenAI text-embedding-3-large
 4. **Computes similarities for both** - Calculates all cosine similarities
-5. **Generates comparison report** - Creates side-by-side comparison with differences
+5. **Displays table comparison** - Easy-to-read table format with side-by-side results
+6. **Calculates statistics** - Average, max, and min differences across all comparisons
+7. **Generates comparison report** - Saves detailed report to file
 
 ## Output Files
 
@@ -42,21 +44,30 @@ Comparison mode generates:
 COMPARISON RESULTS: Cohere vs OpenAI
 ================================================================================
 
-1. Image-to-Image Similarity (College of Science vs Social Sciences):
---------------------------------------------------------------------------------
-  Cohere:  0.227330
-  OpenAI:  0.890859
-  Difference: 0.663529 (291.88%)
+1. Image-to-Image Similarity
+Comparison                  Cohere    OpenAI    Difference  Diff %
+-------------------------------------------------------------------
+Science vs Social Sciences  0.227330  0.890503  0.663172    291.72%
 
-2. Text-to-Image Similarities:
---------------------------------------------------------------------------------
+2. Text-to-Image Similarities
+Query                     Image            Cohere    OpenAI    Difference  Diff %
+----------------------------------------------------------------------------------
+person with tape and cap  Science          0.162016  0.163549  0.001533    0.95%
+person with tape and cap  Social Sciences  0.044612  0.146793  0.102181    229.05%
+cart with single tire     Science          0.018512  0.076938  0.058427    315.62%
+cart with single tire     Social Sciences  0.238193  0.066356  0.171837    72.14%
 
-   Query: "person with tape and cap"
-   ----------------------------------------------------------------------------
-     vs Science:
-       Cohere:  0.162016
-       OpenAI:  0.163689
-       Difference: 0.001672 (1.03%)
+================================================================================
+Summary Statistics
+================================================================================
+  Embedding Dimensions:
+    • Cohere embed-v4.0: 1536 dimensions
+    • OpenAI text-embedding-3-large: 3072 dimensions
+
+  Similarity Difference Statistics:
+    • Average difference: 0.199430
+    • Max difference: 0.663172
+    • Min difference: 0.001533
 ```
 
 ## Key Observations
