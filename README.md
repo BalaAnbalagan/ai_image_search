@@ -1,22 +1,28 @@
-# CMPE-273 Assignment: AI Image Search with Cohere Embeddings
+# CMPE-273 Assignment: AI Image Search with Multi-Provider Support
 
 ## Assignment Overview
 
-This project demonstrates AI-powered image search using **Cohere's embed-v4.0 model**. The implementation generates embeddings for images and text queries, then computes cosine similarity scores to measure semantic relationships between visual and textual content.
+This project demonstrates AI-powered image search with support for multiple embedding providers. The implementation generates embeddings for images and text queries, then computes cosine similarity scores to measure semantic relationships between visual and textual content.
+
+**Supported Providers:**
+- **Cohere embed-v4.0** (Recommended - matches assignment requirements)
+- **OpenAI text-embedding-3-large** (Alternative option)
 
 ## Features
 
-- **Image Embedding Generation**: Downloads images from URLs and generates embeddings using Cohere embed-v4.0
+- **Multi-Provider Support**: Choose between Cohere or OpenAI APIs
+- **Image Embedding Generation**: Downloads images from URLs and generates embeddings
 - **Text Embedding Generation**: Creates embeddings for natural language queries
 - **Cosine Similarity Computation**: Measures similarity between:
   - Image-to-Image comparisons
   - Text-to-Image cross-modal searches
 - **Clean Output**: Professional formatting with detailed results display
+- **Easy Configuration**: Simple one-line switch between providers
 
 ## Requirements
 
 - Python 3.8+
-- Cohere API Key
+- API Key (Cohere recommended, or OpenAI)
 
 ## Installation
 
@@ -31,17 +37,35 @@ cd ai_image_search
 pip install -r requirements.txt
 ```
 
-3. Set up your Cohere API key:
-   - Sign up at [Cohere](https://cohere.com/)
-   - Get your API key from the dashboard
-   - Replace `YOUR_API_KEY_HERE` in the script with your actual API key
+3. Configure your API provider:
+   - Open `ai_image_search.py`
+   - Set `API_PROVIDER = "cohere"` or `"openai"` (line 138)
+   - Add your API key to the corresponding variable (lines 141-142)
+
+See **[API_CONFIGURATION_GUIDE.md](API_CONFIGURATION_GUIDE.md)** for detailed setup instructions.
 
 ## Usage
 
-Run the script:
+### Quick Start (Cohere - Recommended)
+```python
+# In ai_image_search.py
+API_PROVIDER = "cohere"
+COHERE_API_KEY = "your-cohere-key-here"
+```
+
+Then run:
 ```bash
 python ai_image_search.py
 ```
+
+### Alternative (OpenAI)
+```python
+# In ai_image_search.py
+API_PROVIDER = "openai"
+OPENAI_API_KEY = "your-openai-key-here"
+```
+
+**Note**: OpenAI doesn't support direct image embeddings, so results will be less accurate for this use case.
 
 ## Implementation Details
 

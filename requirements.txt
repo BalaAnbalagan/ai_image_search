@@ -1,3 +1,7 @@
-cohere>=5.0.0
+# Core dependencies
 numpy>=1.24.0
 requests>=2.31.0
+
+# API Provider SDKs (install based on your chosen provider)
+cohere>=5.0.0          # For Cohere API support
+openai>=1.0.0          # For OpenAI API support
