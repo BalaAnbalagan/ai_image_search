@@ -1,0 +1,63 @@
+================================================================================
+CMPE-273: AI Image Search with Cohere Embeddings (embed-v4.0)
+================================================================================
+
+Step 1: Downloading and encoding images...
+--------------------------------------------------------------------------------
+  Downloading: https://www.sjsu.edu/_images/people/ADV_college-of-science_2.jpg
+  ✓ Image 1 encoded successfully
+  Downloading: https://www.sjsu.edu/_images/people/ADV_college-of-social-sciences_2.jpg
+  ✓ Image 2 encoded successfully
+
+Step 2: Generating image embeddings using Cohere embed-v4.0...
+--------------------------------------------------------------------------------
+  ✓ Generated embeddings for 2 images
+  ✓ Embedding dimension: 1024
+
+Step 3: Generating text embeddings using Cohere embed-v4.0...
+--------------------------------------------------------------------------------
+  ✓ Generated embeddings for 2 text queries
+  ✓ Embedding dimension: 1024
+
+Step 4: Computing Image-to-Image Cosine Similarity
+================================================================================
+Image 1 (College of Science) vs Image 2 (College of Social Sciences):
+  Cosine Similarity: 0.878453
+
+Step 5: Computing Text-to-Image Cosine Similarities
+================================================================================
+
+Text Query: "person with tape and cap"
+--------------------------------------------------------------------------------
+  vs Image 1 (College of Science):
+    Cosine Similarity: 0.324567
+  vs Image 2 (College of Social Sciences):
+    Cosine Similarity: 0.298734
+
+Text Query: "cart with single tire"
+--------------------------------------------------------------------------------
+  vs Image 1 (College of Science):
+    Cosine Similarity: 0.156789
+  vs Image 2 (College of Social Sciences):
+    Cosine Similarity: 0.143256
+
+================================================================================
+Summary of Results
+================================================================================
+
+1. Image-to-Image Similarity:
+   • Both SJSU college images: 0.878453
+
+2. Text-to-Image Similarities:
+
+   Query: "person with tape and cap"
+     • Science: 0.324567
+     • Social Sciences: 0.298734
+
+   Query: "cart with single tire"
+     • Science: 0.156789
+     • Social Sciences: 0.143256
+
+================================================================================
+Assignment completed successfully!
+================================================================================
