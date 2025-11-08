@@ -1,37 +1,37 @@
-# CMPE-273 Assignment: AI Image Search with Multi-Provider Support
+# AI Image Search with Multimodal Embeddings
 
-## Assignment Overview
+A practical implementation of AI-powered image search using multimodal embeddings. This project demonstrates semantic search capabilities by comparing images and text queries using vector embeddings and cosine similarity.
 
-This project demonstrates AI-powered image search with support for multiple embedding providers. The implementation generates embeddings for images and text queries, then computes cosine similarity scores to measure semantic relationships between visual and textual content.
-
-**Supported Providers:**
-- **Cohere embed-v4.0** (Multimodal - supports both images and text)
-- **OpenAI text-embedding-3-large** (Text-only - not used for image embeddings)
+**Author:** Bala Anbalagan
+**Email:** bala.anbalagan@sjsu.edu
 
 ## Features
 
-- **Multi-Provider Support**: Choose between Cohere or OpenAI APIs
-- **Comparison Mode**: Run both providers simultaneously and compare results side-by-side
-- **Automatic Image Detection**: Uses 2 images (assignment mode) or 10+ images (extended mode)
-- **Image Embedding Generation**: Downloads images from URLs and generates embeddings
-- **Text Embedding Generation**: Creates embeddings for natural language queries
-- **Cosine Similarity Computation**: Measures similarity between:
-  - Image-to-Image comparisons
-  - Text-to-Image cross-modal searches
-- **Interactive Search**: Search with any text query and get ranked results
-- **Clean Output**: Professional formatting with detailed results display
-- **Secure API Key Management**: Uses .env file to keep credentials safe
+- **Multimodal Embeddings**: Generate embeddings for both images and text using Cohere's embed-v4.0 model
+- **Semantic Image Search**: Find images using natural language queries
+- **Image-to-Image Similarity**: Compare and rank image similarities
+- **Interactive Jupyter Notebook**: Learn embedding concepts with hands-on examples
+- **Automatic Mode Detection**: Works with 2 images (demo mode) or folders with multiple images
+- **Clean Visualizations**: Grid layouts and side-by-side comparisons
+- **Secure API Management**: Environment-based configuration
 
-## Requirements
+## Supported Providers
+
+- **Cohere embed-v4.0** (Multimodal - supports both images and text)
+- **OpenAI text-embedding-3-large** (Text-only - not used for image embeddings)
+
+## Quick Start
+
+### Prerequisites
 
 - Python 3.8+
-- API Key (Cohere recommended, or OpenAI)
+- Cohere API key ([Get free key](https://dashboard.cohere.com/api-keys))
 
-## Installation
+### Installation
 
-1. Clone this repository:
+1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/BalaAnbalagan/ai_image_search.git
 cd ai_image_search
 ```
 
@@ -40,117 +40,98 @@ cd ai_image_search
 pip install -r requirements.txt
 ```
 
-3. Configure your API keys:
-   - Copy `.env.example` to `.env`:
-     ```bash
-     cp .env.example .env
+3. Configure API key:
+   - Copy `.env.example` to `.env`
+   - Add your Cohere API key to `.env`:
      ```
-   - Edit `.env` and add your API key(s):
-     ```
-     COHERE_API_KEY=your-cohere-key-here
-     OPENAI_API_KEY=your-openai-key-here
+     COHERE_API_KEY=your-key-here
      ```
 
-See **[API_CONFIGURATION_GUIDE.md](API_CONFIGURATION_GUIDE.md)** for detailed setup instructions.
+### Usage
 
-## Usage
+#### Jupyter Notebook (Recommended)
 
-### Jupyter Notebook (Recommended)
-
-Interactive notebook covering both learning and practical application:
+The interactive notebook provides a complete learning experience:
 
 ```bash
 jupyter notebook ai_image_search.ipynb
 ```
 
-**Part 1: Core Concepts** (Satisfies requirements)
-- Uses the 2 specific SJSU images
-- Demonstrates `embed-v4.0` model
-- Computes image-to-image similarity
-- Uses the 2 specified text queries
-- Shows text-to-image similarities
-- Explains embedding concepts
+**What you'll learn:**
+- How embeddings represent visual and textual content
+- Computing similarity between images
+- Cross-modal search (text-to-image)
+- Building a practical image search engine
 
-**Part 2: Practical Search Engine** (Real-world extension)
-- Load images from **any folder**
-- Search with **text input queries**
-- Get **ranked results** with scores
-- Try **unlimited searches** interactively
+**Features:**
+- Automatic image detection (2 images or folder mode)
+- Visual comparisons with side-by-side displays
+- Interactive search with ranked results
+- Educational explanations of embedding concepts
 
-See **[NOTEBOOK_GUIDE.md](NOTEBOOK_GUIDE.md)** for detailed usage instructions.
+#### Command Line
 
-### Single Provider Mode (Command Line)
+For quick testing:
 
-Run the script:
 ```bash
 python3 ai_image_search.py
 ```
 
-If you have **one API key** configured:
-- The script will automatically use that provider
+## Project Structure
 
-If you have **both API keys** configured, you'll see a menu:
 ```
-1. COHERE only - Cohere embed-v4.0 (Recommended for assignment)
-2. OPENAI only - OpenAI text-embedding-3-large
-3. COMPARE BOTH - Run both and generate comparison report
+ai_image_search/
+├── ai_image_search.ipynb    # Main interactive notebook
+├── requirements.txt          # Python dependencies
+├── .env.example             # API key template
+├── images/                  # Sample images
+└── README.md
 ```
 
-### Comparison Mode (Command Line)
+## How It Works
 
-Select option **3** to run both providers and generate a detailed comparison report. See **[COMPARISON_MODE_GUIDE.md](COMPARISON_MODE_GUIDE.md)** for details.
+1. **Image Encoding**: Images are converted to base64 format
+2. **Embedding Generation**: Cohere's embed-v4.0 model creates vector representations
+3. **Similarity Computation**: Cosine similarity measures semantic relationships
+4. **Search & Ranking**: Text queries are matched against image embeddings
 
-**Note**: OpenAI doesn't support direct image embeddings, so it uses image URLs as text (limitation of the API).
+## Technical Details
 
-## Implementation Details
+### Key Technologies
 
-### Images Analyzed
-1. SJSU College of Science - `https://www.sjsu.edu/_images/people/ADV_college-of-science_2.jpg`
-2. SJSU College of Social Sciences - `https://www.sjsu.edu/_images/people/ADV_college-of-social-sciences_2.jpg`
+- **Cohere Python SDK**: Multimodal embedding generation
+- **NumPy**: Vector operations and cosine similarity
+- **Jupyter**: Interactive development environment
+- **Pillow**: Image processing
+- **Pandas**: Data analysis and visualization
 
-### Text Queries
-1. "person with tape and cap"
-2. "cart with single tire"
+### Similarity Scoring
 
-### Key Functions
+Cosine similarity scores range from -1 to 1:
+- **0.8 - 1.0**: Excellent match
+- **0.6 - 0.8**: Good match
+- **0.4 - 0.6**: Moderate match
+- **0.2 - 0.4**: Weak match
+- **< 0.2**: Poor match
 
-- `download_and_encode_image(url)`: Downloads an image and encodes it to base64
-- `compute_cosine_similarity(embedding1, embedding2)`: Computes cosine similarity using NumPy
-- `main()`: Orchestrates the entire workflow
+## Example Use Cases
 
-## Output
+- **Content-Based Image Retrieval**: Find similar images in large collections
+- **Visual Search**: Search image databases with natural language
+- **Image Clustering**: Group similar images automatically
+- **Duplicate Detection**: Identify near-duplicate images
 
-The script provides:
-- Step-by-step progress indicators
-- Image-to-image similarity scores
-- Text-to-image similarity scores for each query-image pair
-- Comprehensive summary of all results
+## Resources
 
-See [example_output.txt](example_output.txt) for sample output.
-
-## Technical Stack
-
-- **Cohere Python SDK**: For embedding generation
-- **NumPy**: For cosine similarity computation
-- **Requests**: For downloading images
-- **Base64**: For image encoding
-
-## Assignment Requirements Met
-
-✅ Uses Cohere Python SDK with embed-v4.0 model
-✅ Generates embeddings for both specified images
-✅ Generates embeddings for both text queries
-✅ Computes cosine similarity between images
-✅ Computes cosine similarity between each text query and each image
-✅ Displays results in a clean, professional format
-✅ Code is runnable with API key replacement
-
-## Author
-
-CMPE-273 Student
-San Jose State University
-Date: November 8, 2025
+- [Cohere Embed v4.0 Documentation](https://docs.cohere.com/docs/embed-v4)
+- [Image Embeddings Guide](https://docs.cohere.com/v2/docs/embeddings#image-embeddings)
+- [Vector Search Tutorial](https://docs.cohere.com/docs/semantic-search)
 
 ## License
 
-This project is submitted as part of CMPE-273 coursework at SJSU.
+MIT License - See LICENSE file for details
+
+## Acknowledgments
+
+- Sample images from [Pexels.com](https://pexels.com) (free to use under Pexels License)
+- Cohere for providing the multimodal embedding API
