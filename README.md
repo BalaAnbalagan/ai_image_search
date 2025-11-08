@@ -5,6 +5,9 @@ A practical implementation of AI-powered image search using multimodal embedding
 **Author:** Bala Anbalagan
 **Email:** bala.anbalagan@sjsu.edu
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/BalaAnbalagan/ai_image_search/blob/main/ai_image_search.ipynb)
+[![View in nbviewer](https://img.shields.io/badge/render-nbviewer-orange.svg)](https://nbviewer.org/github/BalaAnbalagan/ai_image_search/blob/main/ai_image_search.ipynb)
+
 ## Features
 
 - **Multimodal Embeddings**: Generate embeddings for both images and text using Cohere's embed-v4.0 model
@@ -51,11 +54,20 @@ pip install -r requirements.txt
 
 #### Jupyter Notebook (Recommended)
 
-The interactive notebook provides a complete learning experience:
+The interactive notebook provides a complete learning experience. You can run it in multiple ways:
 
+**Option 1: Google Colab (No setup required)**
+- Click the "Open in Colab" badge above
+- Add your Cohere API key when prompted
+- Run all cells
+
+**Option 2: Jupyter Locally**
 ```bash
 jupyter notebook ai_image_search.ipynb
 ```
+
+**Option 3: View Only**
+- Click the "nbviewer" badge to see a static rendered version
 
 **What you'll learn:**
 - How embeddings represent visual and textual content
