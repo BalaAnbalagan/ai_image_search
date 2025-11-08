@@ -144,19 +144,82 @@ def generate_embeddings_openai(api_key: str, images: List[str], texts: List[str]
 def main():
     """Main function to execute the AI Image Search assignment."""
 
-    # ==================== CONFIGURATION ====================
-    # Choose your API provider: "cohere" or "openai"
-    API_PROVIDER = "cohere"  # Change to "openai" to use OpenAI instead
-
-    # API Keys - Loaded from .env file (secure - not committed to git)
+    # Load API Keys from .env file (secure - not committed to git)
     COHERE_API_KEY = os.getenv("COHERE_API_KEY", "YOUR_COHERE_API_KEY_HERE")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY_HERE")
-    # =======================================================
 
-    print("=" * 80)
-    print(f"CMPE-273: AI Image Search with {API_PROVIDER.upper()} API")
-    print("=" * 80)
-    print()
+    # Detect available API providers
+    available_providers = []
+    if COHERE_API_KEY != "YOUR_COHERE_API_KEY_HERE":
+        available_providers.append("cohere")
+    if OPENAI_API_KEY != "YOUR_OPENAI_API_KEY_HERE":
+        available_providers.append("openai")
+
+    # ==================== API PROVIDER SELECTION ====================
+    if len(available_providers) == 0:
+        print("=" * 80)
+        print("ERROR: No API keys found!")
+        print("=" * 80)
+        print("\nPlease add your API key to the .env file:")
+        print("  1. Copy .env.example to .env")
+        print("  2. Add your Cohere or OpenAI API key")
+        print("  3. Run the script again")
+        return
+
+    elif len(available_providers) == 1:
+        # Only one provider available, use it automatically
+        API_PROVIDER = available_providers[0]
+        print("=" * 80)
+        print(f"CMPE-273: AI Image Search with {API_PROVIDER.upper()} API")
+        print("=" * 80)
+        print(f"Using {API_PROVIDER.upper()} (only available provider)")
+        print()
+
+    else:
+        # Multiple providers available, let user choose
+        print("=" * 80)
+        print("CMPE-273: AI Image Search - Multi-Provider Support")
+        print("=" * 80)
+        print("\nMultiple API keys detected! Please select a mode:")
+        print()
+        print("  1. COHERE only - Cohere embed-v4.0 (Recommended for assignment)")
+        print("  2. OPENAI only - OpenAI text-embedding-3-large")
+        print("  3. COMPARE BOTH - Run both and generate comparison report")
+
+        print()
+        while True:
+            try:
+                choice = input("Enter your choice (1, 2, or 3): ").strip()
+                if choice == "3":
+                    # Compare mode - will run both
+                    run_comparison = True
+                    API_PROVIDER = None  # Will run both
+                    break
+                else:
+                    choice_idx = int(choice) - 1
+                    if 0 <= choice_idx < len(available_providers):
+                        run_comparison = False
+                        API_PROVIDER = available_providers[choice_idx]
+                        break
+                    else:
+                        print("Invalid choice. Please enter 1, 2, or 3.")
+            except (ValueError, KeyboardInterrupt):
+                print("\nExiting...")
+                return
+
+        if not run_comparison:
+            print()
+            print("=" * 80)
+            print(f"Selected: {API_PROVIDER.upper()} API")
+            print("=" * 80)
+            print()
+        else:
+            print()
+            print("=" * 80)
+            print("Comparison Mode: Running BOTH Cohere and OpenAI")
+            print("=" * 80)
+            print()
+    # =================================================================
 
     # Define image URLs
     image_urls = [
@@ -184,94 +247,332 @@ def main():
             return
     print()
 
-    # Step 2 & 3: Generate embeddings based on selected provider
-    print(f"Step 2 & 3: Generating embeddings using {API_PROVIDER.upper()} API...")
-    print("-" * 80)
+    # Determine if we need to check for run_comparison variable
     try:
-        if API_PROVIDER.lower() == "cohere":
-            api_key = COHERE_API_KEY
-            if api_key == "YOUR_COHERE_API_KEY_HERE":
-                print("  ✗ Error: Please set your Cohere API key in the COHERE_API_KEY variable")
-                return
-            image_embeddings, text_embeddings = generate_embeddings_cohere(
-                api_key, encoded_images, text_queries
-            )
+        run_comparison
+    except NameError:
+        run_comparison = False
 
-        elif API_PROVIDER.lower() == "openai":
-            api_key = OPENAI_API_KEY
-            if api_key == "YOUR_OPENAI_API_KEY_HERE":
-                print("  ✗ Error: Please set your OpenAI API key in the OPENAI_API_KEY variable")
-                return
-            image_embeddings, text_embeddings = generate_embeddings_openai(
-                api_key, encoded_images, text_queries, image_urls
-            )
+    # Step 2 & 3: Generate embeddings
+    if run_comparison:
+        # Comparison mode: Run both providers
+        print("Step 2 & 3: Generating embeddings using BOTH APIs for comparison...")
+        print("=" * 80)
 
-        else:
-            print(f"  ✗ Error: Unsupported API provider: {API_PROVIDER}")
-            print("  Supported providers: 'cohere', 'openai'")
+        # Store results from both providers
+        results = {}
+
+        # Run Cohere
+        print("\n[1/2] Running Cohere API...")
+        print("-" * 80)
+        try:
+            cohere_img_emb, cohere_txt_emb = generate_embeddings_cohere(
+                COHERE_API_KEY, encoded_images, text_queries
+            )
+            print(f"  ✓ Cohere: Generated embeddings for {len(cohere_img_emb)} images")
+            print(f"  ✓ Cohere: Embedding dimension: {len(cohere_img_emb[0])}")
+            print(f"  ✓ Cohere: Generated embeddings for {len(cohere_txt_emb)} text queries")
+            results['cohere'] = {
+                'image_embeddings': cohere_img_emb,
+                'text_embeddings': cohere_txt_emb
+            }
+        except Exception as e:
+            print(f"  ✗ Error with Cohere API: {e}")
+            import traceback
+            traceback.print_exc()
             return
 
-        print(f"  ✓ Generated embeddings for {len(image_embeddings)} images")
-        print(f"  ✓ Embedding dimension: {len(image_embeddings[0])}")
-        print(f"  ✓ Generated embeddings for {len(text_embeddings)} text queries")
+        # Run OpenAI
+        print("\n[2/2] Running OpenAI API...")
+        print("-" * 80)
+        try:
+            openai_img_emb, openai_txt_emb = generate_embeddings_openai(
+                OPENAI_API_KEY, encoded_images, text_queries, image_urls
+            )
+            print(f"  ✓ OpenAI: Generated embeddings for {len(openai_img_emb)} images")
+            print(f"  ✓ OpenAI: Embedding dimension: {len(openai_img_emb[0])}")
+            print(f"  ✓ OpenAI: Generated embeddings for {len(openai_txt_emb)} text queries")
+            results['openai'] = {
+                'image_embeddings': openai_img_emb,
+                'text_embeddings': openai_txt_emb
+            }
+        except Exception as e:
+            print(f"  ✗ Error with OpenAI API: {e}")
+            import traceback
+            traceback.print_exc()
+            return
 
-    except Exception as e:
-        print(f"  ✗ Error generating embeddings: {e}")
-        import traceback
-        traceback.print_exc()
-        return
-    print()
+        print()
 
-    # Step 4: Compute image-to-image similarity
-    print("Step 4: Computing Image-to-Image Cosine Similarity")
-    print("=" * 80)
-    img_to_img_similarity = compute_cosine_similarity(
-        image_embeddings[0],
-        image_embeddings[1]
-    )
-    print(f"Image 1 (College of Science) vs Image 2 (College of Social Sciences):")
-    print(f"  Cosine Similarity: {img_to_img_similarity:.6f}")
-    print()
+    else:
+        # Single provider mode
+        print(f"Step 2 & 3: Generating embeddings using {API_PROVIDER.upper()} API...")
+        print("-" * 80)
+        try:
+            if API_PROVIDER.lower() == "cohere":
+                api_key = COHERE_API_KEY
+                if api_key == "YOUR_COHERE_API_KEY_HERE":
+                    print("  ✗ Error: Please set your Cohere API key in the COHERE_API_KEY variable")
+                    return
+                image_embeddings, text_embeddings = generate_embeddings_cohere(
+                    api_key, encoded_images, text_queries
+                )
 
-    # Step 5: Compute text-to-image similarities
-    print("Step 5: Computing Text-to-Image Cosine Similarities")
-    print("=" * 80)
+            elif API_PROVIDER.lower() == "openai":
+                api_key = OPENAI_API_KEY
+                if api_key == "YOUR_OPENAI_API_KEY_HERE":
+                    print("  ✗ Error: Please set your OpenAI API key in the OPENAI_API_KEY variable")
+                    return
+                image_embeddings, text_embeddings = generate_embeddings_openai(
+                    api_key, encoded_images, text_queries, image_urls
+                )
 
-    for text_idx, text_query in enumerate(text_queries):
-        print(f"\nText Query: \"{text_query}\"")
+            else:
+                print(f"  ✗ Error: Unsupported API provider: {API_PROVIDER}")
+                print("  Supported providers: 'cohere', 'openai'")
+                return
+
+            print(f"  ✓ Generated embeddings for {len(image_embeddings)} images")
+            print(f"  ✓ Embedding dimension: {len(image_embeddings[0])}")
+            print(f"  ✓ Generated embeddings for {len(text_embeddings)} text queries")
+
+        except Exception as e:
+            print(f"  ✗ Error generating embeddings: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+        print()
+
+    # Step 4 & 5: Compute similarities and display results
+    if run_comparison:
+        # Comparison mode: Compute and compare both providers
+        print("Step 4 & 5: Computing Similarities and Comparing Results")
+        print("=" * 80)
+
+        # Compute similarities for both providers
+        comparison_data = {}
+
+        for provider in ['cohere', 'openai']:
+            img_emb = results[provider]['image_embeddings']
+            txt_emb = results[provider]['text_embeddings']
+
+            # Image-to-image similarity
+            img_to_img = compute_cosine_similarity(img_emb[0], img_emb[1])
+
+            # Text-to-image similarities
+            txt_to_img = []
+            for text_idx in range(len(txt_emb)):
+                for img_idx in range(len(img_emb)):
+                    similarity = compute_cosine_similarity(txt_emb[text_idx], img_emb[img_idx])
+                    txt_to_img.append({
+                        'text_idx': text_idx,
+                        'img_idx': img_idx,
+                        'similarity': similarity
+                    })
+
+            comparison_data[provider] = {
+                'img_to_img': img_to_img,
+                'txt_to_img': txt_to_img
+            }
+
+        # Display comparison results
+        print("\n" + "=" * 80)
+        print("COMPARISON RESULTS: Cohere vs OpenAI")
+        print("=" * 80)
+
+        # Image-to-image comparison
+        print("\n1. Image-to-Image Similarity (College of Science vs Social Sciences):")
+        print("-" * 80)
+        cohere_i2i = comparison_data['cohere']['img_to_img']
+        openai_i2i = comparison_data['openai']['img_to_img']
+        diff_i2i = abs(cohere_i2i - openai_i2i)
+        print(f"  Cohere:  {cohere_i2i:.6f}")
+        print(f"  OpenAI:  {openai_i2i:.6f}")
+        print(f"  Difference: {diff_i2i:.6f} ({(diff_i2i/cohere_i2i)*100:.2f}%)")
+
+        # Text-to-image comparison
+        print("\n2. Text-to-Image Similarities:")
         print("-" * 80)
 
-        for img_idx in range(len(image_embeddings)):
-            similarity = compute_cosine_similarity(
-                text_embeddings[text_idx],
-                image_embeddings[img_idx]
-            )
-            image_name = "College of Science" if img_idx == 0 else "College of Social Sciences"
-            print(f"  vs Image {img_idx + 1} ({image_name}):")
-            print(f"    Cosine Similarity: {similarity:.6f}")
+        for text_idx, text_query in enumerate(text_queries):
+            print(f"\n   Query: \"{text_query}\"")
+            print("   " + "-" * 76)
 
-    print()
-    print("=" * 80)
-    print("Summary of Results")
-    print("=" * 80)
-    print(f"\n1. Image-to-Image Similarity:")
-    print(f"   • Both SJSU college images: {img_to_img_similarity:.6f}")
-    print(f"\n2. Text-to-Image Similarities:")
+            for img_idx in range(len(image_urls)):
+                image_name = "Science" if img_idx == 0 else "Social Sciences"
 
-    for text_idx, text_query in enumerate(text_queries):
-        print(f"\n   Query: \"{text_query}\"")
-        for img_idx in range(len(image_embeddings)):
-            similarity = compute_cosine_similarity(
-                text_embeddings[text_idx],
-                image_embeddings[img_idx]
-            )
-            image_name = "Science" if img_idx == 0 else "Social Sciences"
-            print(f"     • {image_name}: {similarity:.6f}")
+                # Find similarities for this text-image pair
+                cohere_sim = next(item['similarity'] for item in comparison_data['cohere']['txt_to_img']
+                                  if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                openai_sim = next(item['similarity'] for item in comparison_data['openai']['txt_to_img']
+                                  if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                diff = abs(cohere_sim - openai_sim)
 
-    print()
-    print("=" * 80)
-    print("Assignment completed successfully!")
-    print("=" * 80)
+                print(f"     vs {image_name}:")
+                print(f"       Cohere:  {cohere_sim:.6f}")
+                print(f"       OpenAI:  {openai_sim:.6f}")
+                print(f"       Difference: {diff:.6f} ({(diff/max(cohere_sim, 0.0001))*100:.2f}%)")
+
+        print("\n" + "=" * 80)
+        print("Comparison completed successfully!")
+        print("=" * 80)
+
+        # Save comparison report
+        output_filename = "comparison_report.txt"
+        try:
+            with open(output_filename, 'w') as f:
+                f.write("=" * 80 + "\n")
+                f.write("CMPE-273: AI Image Search - Cohere vs OpenAI Comparison\n")
+                f.write("=" * 80 + "\n\n")
+
+                f.write("COMPARISON RESULTS\n")
+                f.write("=" * 80 + "\n\n")
+
+                # Image-to-image
+                f.write("1. Image-to-Image Similarity (College of Science vs Social Sciences):\n")
+                f.write("-" * 80 + "\n")
+                f.write(f"  Cohere:  {cohere_i2i:.6f}\n")
+                f.write(f"  OpenAI:  {openai_i2i:.6f}\n")
+                f.write(f"  Difference: {diff_i2i:.6f} ({(diff_i2i/cohere_i2i)*100:.2f}%)\n\n")
+
+                # Text-to-image
+                f.write("2. Text-to-Image Similarities:\n")
+                f.write("-" * 80 + "\n\n")
+
+                for text_idx, text_query in enumerate(text_queries):
+                    f.write(f'   Query: "{text_query}"\n')
+                    f.write("   " + "-" * 76 + "\n")
+
+                    for img_idx in range(len(image_urls)):
+                        image_name = "Science" if img_idx == 0 else "Social Sciences"
+
+                        cohere_sim = next(item['similarity'] for item in comparison_data['cohere']['txt_to_img']
+                                          if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                        openai_sim = next(item['similarity'] for item in comparison_data['openai']['txt_to_img']
+                                          if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                        diff = abs(cohere_sim - openai_sim)
+
+                        f.write(f"     vs {image_name}:\n")
+                        f.write(f"       Cohere:  {cohere_sim:.6f}\n")
+                        f.write(f"       OpenAI:  {openai_sim:.6f}\n")
+                        f.write(f"       Difference: {diff:.6f} ({(diff/max(cohere_sim, 0.0001))*100:.2f}%)\n\n")
+
+                f.write("\n" + "=" * 80 + "\n")
+                f.write("Key Observations:\n")
+                f.write("=" * 80 + "\n\n")
+                f.write("• Cohere embed-v4.0 supports native image embeddings\n")
+                f.write("• OpenAI text-embedding-3-large uses image URLs as text (limitation)\n")
+                f.write("• This explains the differences in similarity scores\n")
+                f.write("• For true image understanding, Cohere's multimodal model is recommended\n\n")
+
+            print(f"\n✓ Comparison report saved to: {output_filename}")
+
+        except Exception as e:
+            print(f"\n⚠ Warning: Could not save comparison report: {e}")
+
+    else:
+        # Single provider mode
+        print("Step 4: Computing Image-to-Image Cosine Similarity")
+        print("=" * 80)
+        img_to_img_similarity = compute_cosine_similarity(
+            image_embeddings[0],
+            image_embeddings[1]
+        )
+        print(f"Image 1 (College of Science) vs Image 2 (College of Social Sciences):")
+        print(f"  Cosine Similarity: {img_to_img_similarity:.6f}")
+        print()
+
+        # Step 5: Compute text-to-image similarities
+        print("Step 5: Computing Text-to-Image Cosine Similarities")
+        print("=" * 80)
+
+        for text_idx, text_query in enumerate(text_queries):
+            print(f"\nText Query: \"{text_query}\"")
+            print("-" * 80)
+
+            for img_idx in range(len(image_embeddings)):
+                similarity = compute_cosine_similarity(
+                    text_embeddings[text_idx],
+                    image_embeddings[img_idx]
+                )
+                image_name = "College of Science" if img_idx == 0 else "College of Social Sciences"
+                print(f"  vs Image {img_idx + 1} ({image_name}):")
+                print(f"    Cosine Similarity: {similarity:.6f}")
+
+        print()
+        print("=" * 80)
+        print("Summary of Results")
+        print("=" * 80)
+        print(f"\n1. Image-to-Image Similarity:")
+        print(f"   • Both SJSU college images: {img_to_img_similarity:.6f}")
+        print(f"\n2. Text-to-Image Similarities:")
+
+        for text_idx, text_query in enumerate(text_queries):
+            print(f"\n   Query: \"{text_query}\"")
+            for img_idx in range(len(image_embeddings)):
+                similarity = compute_cosine_similarity(
+                    text_embeddings[text_idx],
+                    image_embeddings[img_idx]
+                )
+                image_name = "Science" if img_idx == 0 else "Social Sciences"
+                print(f"     • {image_name}: {similarity:.6f}")
+
+        print()
+        print("=" * 80)
+        print("Assignment completed successfully!")
+        print("=" * 80)
+
+        # Save results to file with provider-specific name
+        output_filename = f"output_{API_PROVIDER}.txt"
+        try:
+            with open(output_filename, 'w') as f:
+                f.write("=" * 80 + "\n")
+                f.write(f"CMPE-273: AI Image Search with {API_PROVIDER.upper()} API\n")
+                f.write("=" * 80 + "\n\n")
+
+                f.write("Step 4: Image-to-Image Cosine Similarity\n")
+                f.write("=" * 80 + "\n")
+                f.write(f"Image 1 (College of Science) vs Image 2 (College of Social Sciences):\n")
+                f.write(f"  Cosine Similarity: {img_to_img_similarity:.6f}\n\n")
+
+                f.write("Step 5: Text-to-Image Cosine Similarities\n")
+                f.write("=" * 80 + "\n\n")
+
+                for text_idx, text_query in enumerate(text_queries):
+                    f.write(f'Text Query: "{text_query}"\n')
+                    f.write("-" * 80 + "\n")
+                    for img_idx in range(len(image_embeddings)):
+                        similarity = compute_cosine_similarity(
+                            text_embeddings[text_idx],
+                            image_embeddings[img_idx]
+                        )
+                        image_name = "College of Science" if img_idx == 0 else "College of Social Sciences"
+                        f.write(f"  vs Image {img_idx + 1} ({image_name}):\n")
+                        f.write(f"    Cosine Similarity: {similarity:.6f}\n")
+                    f.write("\n")
+
+                f.write("=" * 80 + "\n")
+                f.write("Summary of Results\n")
+                f.write("=" * 80 + "\n\n")
+                f.write(f"1. Image-to-Image Similarity:\n")
+                f.write(f"   • Both SJSU college images: {img_to_img_similarity:.6f}\n\n")
+                f.write(f"2. Text-to-Image Similarities:\n\n")
+
+                for text_idx, text_query in enumerate(text_queries):
+                    f.write(f'   Query: "{text_query}"\n')
+                    for img_idx in range(len(image_embeddings)):
+                        similarity = compute_cosine_similarity(
+                            text_embeddings[text_idx],
+                            image_embeddings[img_idx]
+                        )
+                        image_name = "Science" if img_idx == 0 else "Social Sciences"
+                        f.write(f"     • {image_name}: {similarity:.6f}\n")
+                    f.write("\n")
+
+            print(f"\n✓ Results saved to: {output_filename}")
+
+        except Exception as e:
+            print(f"\n⚠ Warning: Could not save results to file: {e}")
 
 
 if __name__ == "__main__":

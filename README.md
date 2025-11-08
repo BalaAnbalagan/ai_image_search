@@ -11,13 +11,15 @@ This project demonstrates AI-powered image search with support for multiple embe
 ## Features
 
 - **Multi-Provider Support**: Choose between Cohere or OpenAI APIs
+- **Comparison Mode**: Run both providers simultaneously and compare results side-by-side
 - **Image Embedding Generation**: Downloads images from URLs and generates embeddings
 - **Text Embedding Generation**: Creates embeddings for natural language queries
 - **Cosine Similarity Computation**: Measures similarity between:
   - Image-to-Image comparisons
   - Text-to-Image cross-modal searches
 - **Clean Output**: Professional formatting with detailed results display
-- **Easy Configuration**: Simple one-line switch between providers
+- **Interactive Mode**: Automatic provider selection menu when multiple API keys are configured
+- **Secure API Key Management**: Uses .env file to keep credentials safe
 
 ## Requirements
 
@@ -37,35 +39,43 @@ cd ai_image_search
 pip install -r requirements.txt
 ```
 
-3. Configure your API provider:
-   - Open `ai_image_search.py`
-   - Set `API_PROVIDER = "cohere"` or `"openai"` (line 138)
-   - Add your API key to the corresponding variable (lines 141-142)
+3. Configure your API keys:
+   - Copy `.env.example` to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Edit `.env` and add your API key(s):
+     ```
+     COHERE_API_KEY=your-cohere-key-here
+     OPENAI_API_KEY=your-openai-key-here
+     ```
 
 See **[API_CONFIGURATION_GUIDE.md](API_CONFIGURATION_GUIDE.md)** for detailed setup instructions.
 
 ## Usage
 
-### Quick Start (Cohere - Recommended)
-```python
-# In ai_image_search.py
-API_PROVIDER = "cohere"
-COHERE_API_KEY = "your-cohere-key-here"
-```
+### Single Provider Mode
 
-Then run:
+Run the script:
 ```bash
-python ai_image_search.py
+python3 ai_image_search.py
 ```
 
-### Alternative (OpenAI)
-```python
-# In ai_image_search.py
-API_PROVIDER = "openai"
-OPENAI_API_KEY = "your-openai-key-here"
+If you have **one API key** configured:
+- The script will automatically use that provider
+
+If you have **both API keys** configured, you'll see a menu:
+```
+1. COHERE only - Cohere embed-v4.0 (Recommended for assignment)
+2. OPENAI only - OpenAI text-embedding-3-large
+3. COMPARE BOTH - Run both and generate comparison report
 ```
 
-**Note**: OpenAI doesn't support direct image embeddings, so results will be less accurate for this use case.
+### Comparison Mode
+
+Select option **3** to run both providers and generate a detailed comparison report. See **[COMPARISON_MODE_GUIDE.md](COMPARISON_MODE_GUIDE.md)** for details.
+
+**Note**: OpenAI doesn't support direct image embeddings, so it uses image URLs as text (limitation of the API).
 
 ## Implementation Details
 

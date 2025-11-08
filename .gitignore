@@ -37,6 +37,10 @@ ENV/
 *.key
 secrets.txt
 
+# Output files (generated at runtime)
+output_*.txt
+comparison_report.txt
+
 # OS
 .DS_Store
 Thumbs.db
