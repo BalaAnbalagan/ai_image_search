@@ -1,4 +1,0 @@
-CANVAS SUBMISSION TEXT
-======================
-
-This assignment implements AI-powered image search using Cohere's embed-v4.0 model. I generated embeddings for two SJSU college images (College of Science and College of Social Sciences) and two text queries ("person with tape and cap" and "cart with single tire"). Using NumPy, I computed cosine similarity scores between the images (0.878) and between each text query and each image, demonstrating cross-modal semantic search capabilities. The implementation successfully shows how multimodal embeddings can quantify visual and textual similarity for intelligent image retrieval applications.
