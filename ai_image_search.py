@@ -6,10 +6,15 @@ Description: Generate embeddings for images and text using multiple providers (C
              then compute cosine similarity for image-to-image and text-to-image comparisons.
 """
 
+import os
 import numpy as np
 import requests
 import base64
 from typing import List, Tuple
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Optional imports - will be loaded based on API_PROVIDER selection
 try:
@@ -25,23 +30,29 @@ except ImportError:
 
 def download_and_encode_image(url):
     """
-    Download an image from URL and encode it to base64.
+    Download an image from URL and encode it to base64 data URI format.
 
     Args:
         url (str): URL of the image
 
     Returns:
-        str: Base64 encoded image
+        str: Base64 encoded image as data URI
     """
     print(f"  Downloading: {url}")
     response = requests.get(url)
     response.raise_for_status()
 
+    # Detect content type
+    content_type = response.headers.get('content-type', 'image/jpeg')
+
     # Encode image to base64
     image_bytes = response.content
     base64_image = base64.b64encode(image_bytes).decode('utf-8')
 
-    return base64_image
+    # Format as data URI for Cohere API
+    data_uri = f"data:{content_type};base64,{base64_image}"
+
+    return data_uri
 
 
 def compute_cosine_similarity(embedding1, embedding2):
@@ -137,9 +148,9 @@ def main():
     # Choose your API provider: "cohere" or "openai"
     API_PROVIDER = "cohere"  # Change to "openai" to use OpenAI instead
 
-    # API Keys - Replace with your actual key
-    COHERE_API_KEY = "YOUR_COHERE_API_KEY_HERE"
-    OPENAI_API_KEY = "YOUR_OPENAI_API_KEY_HERE"
+    # API Keys - Loaded from .env file (secure - not committed to git)
+    COHERE_API_KEY = os.getenv("COHERE_API_KEY", "YOUR_COHERE_API_KEY_HERE")
+    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "YOUR_OPENAI_API_KEY_HERE")
     # =======================================================
 
     print("=" * 80)

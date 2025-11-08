@@ -1,6 +1,7 @@
 # Core dependencies
 numpy>=1.24.0
 requests>=2.31.0
+python-dotenv>=1.0.0   # For secure .env file management
 
 # API Provider SDKs (install based on your chosen provider)
 cohere>=5.0.0          # For Cohere API support
