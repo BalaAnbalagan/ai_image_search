@@ -40,7 +40,7 @@ pip install -r requirements.txt
 
 Run the script:
 ```bash
-python cohereembeddingreleasewithsearch.py
+python ai_image_search.py
 ```
 
 ## Implementation Details
