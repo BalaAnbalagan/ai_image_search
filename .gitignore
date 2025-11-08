@@ -40,6 +40,7 @@ secrets.txt
 # Output files (generated at runtime)
 output_*.txt
 comparison_report.txt
+comparison_report.html
 
 # OS
 .DS_Store

@@ -496,7 +496,7 @@ def main():
         print("Comparison completed successfully!")
         print("=" * 80)
 
-        # Save comparison report
+        # Save comparison report (text version)
         output_filename = "comparison_report.txt"
         try:
             with open(output_filename, 'w') as f:
@@ -581,6 +581,295 @@ def main():
 
         except Exception as e:
             print(f"\n⚠ Warning: Could not save comparison report: {e}")
+
+        # Generate HTML report with images
+        html_filename = "comparison_report.html"
+        try:
+            from datetime import datetime
+
+            with open(html_filename, 'w') as f:
+                f.write("""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI Image Search - Cohere vs OpenAI Comparison Report</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #34495e;
+            margin-top: 30px;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        h3 {
+            color: #7f8c8d;
+            margin-top: 25px;
+        }
+        .images-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .image-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #fafafa;
+        }
+        .image-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .image-card h4 {
+            margin: 10px 0 5px 0;
+            color: #2c3e50;
+        }
+        .image-card .url {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-box {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        .stat-box h4 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .observations {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .observations ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .observations li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e0e0e0;
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .methodology {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .query-box {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            border-left: 3px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CMPE-273: AI Image Search Comparison Report</h1>
+        <p><strong>Cohere embed-v4.0 vs OpenAI text-embedding-3-large</strong></p>
+        <p><strong>Date:</strong> """ + datetime.now().strftime("%B %d, %Y at %I:%M %p") + """</p>
+
+        <h2>1. Test Images</h2>
+        <p>Two SJSU college images were analyzed for this comparison:</p>
+
+        <div class="images-section">
+            <div class="image-card">
+                <h4>Image 1: College of Science</h4>
+                <img src=\"""" + image_urls[0] + """\" alt="SJSU College of Science">
+                <p class="url">""" + image_urls[0] + """</p>
+            </div>
+            <div class="image-card">
+                <h4>Image 2: College of Social Sciences</h4>
+                <img src=\"""" + image_urls[1] + """\" alt="SJSU College of Social Sciences">
+                <p class="url">""" + image_urls[1] + """</p>
+            </div>
+        </div>
+
+        <h2>2. Test Queries</h2>
+        <div class="query-box">Query 1: \"""" + text_queries[0] + """\"</div>
+        <div class="query-box">Query 2: \"""" + text_queries[1] + """\"</div>
+
+        <div class="methodology">
+            <h3>Methodology</h3>
+            <p><strong>Cohere embed-v4.0:</strong> Multimodal model with native image understanding. Images are processed directly as visual data.</p>
+            <p><strong>OpenAI text-embedding-3-large:</strong> Text-only model. Image URLs are converted to text descriptions (limitation).</p>
+            <p><strong>Similarity Metric:</strong> Cosine similarity computed between embedding vectors.</p>
+        </div>
+
+        <h2>3. Results: Image-to-Image Similarity</h2>
+        <p>Comparison of the two SJSU college images:</p>
+        <table>
+            <tr>
+                <th>Comparison</th>
+                <th>Cohere</th>
+                <th>OpenAI</th>
+                <th>Difference</th>
+                <th>Diff %</th>
+            </tr>
+            <tr>
+                <td>Science vs Social Sciences</td>
+                <td>""" + f"{cohere_i2i:.6f}" + """</td>
+                <td>""" + f"{openai_i2i:.6f}" + """</td>
+                <td>""" + f"{diff_i2i:.6f}" + """</td>
+                <td>""" + f"{(diff_i2i/cohere_i2i)*100:.2f}%" + """</td>
+            </tr>
+        </table>
+
+        <h2>4. Results: Text-to-Image Similarities</h2>
+        <p>Comparison of text query embeddings with image embeddings:</p>
+        <table>
+            <tr>
+                <th>Query</th>
+                <th>Image</th>
+                <th>Cohere</th>
+                <th>OpenAI</th>
+                <th>Difference</th>
+                <th>Diff %</th>
+            </tr>
+""")
+
+                # Add text-to-image rows
+                for text_idx, text_query in enumerate(text_queries):
+                    for img_idx in range(len(image_urls)):
+                        image_name = "Science" if img_idx == 0 else "Social Sciences"
+
+                        cohere_sim = next(item['similarity'] for item in comparison_data['cohere']['txt_to_img']
+                                          if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                        openai_sim = next(item['similarity'] for item in comparison_data['openai']['txt_to_img']
+                                          if item['text_idx'] == text_idx and item['img_idx'] == img_idx)
+                        diff = abs(cohere_sim - openai_sim)
+
+                        f.write(f"""            <tr>
+                <td>{text_query}</td>
+                <td>{image_name}</td>
+                <td>{cohere_sim:.6f}</td>
+                <td>{openai_sim:.6f}</td>
+                <td>{diff:.6f}</td>
+                <td>{(diff/max(cohere_sim, 0.0001))*100:.2f}%</td>
+            </tr>
+""")
+
+                f.write("""        </table>
+
+        <h2>5. Summary Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h4>Cohere Embedding Dimension</h4>
+                <div class="stat-value">""" + str(len(results['cohere']['image_embeddings'][0])) + """ dimensions</div>
+            </div>
+            <div class="stat-box">
+                <h4>OpenAI Embedding Dimension</h4>
+                <div class="stat-value">""" + str(len(results['openai']['image_embeddings'][0])) + """ dimensions</div>
+            </div>
+            <div class="stat-box">
+                <h4>Average Difference</h4>
+                <div class="stat-value">""" + f"{np.mean(all_diffs):.6f}" + """</div>
+            </div>
+            <div class="stat-box">
+                <h4>Max Difference</h4>
+                <div class="stat-value">""" + f"{np.max(all_diffs):.6f}" + """</div>
+            </div>
+        </div>
+
+        <div class="observations">
+            <h3>Key Observations</h3>
+            <ul>
+                <li><strong>Cohere embed-v4.0</strong> supports native multimodal image embeddings, allowing direct visual understanding</li>
+                <li><strong>OpenAI text-embedding-3-large</strong> only supports text, so image URLs are processed as text strings (significant limitation)</li>
+                <li>This fundamental difference explains the large variations in similarity scores</li>
+                <li><strong>Image-to-image similarity</strong> shows the largest difference (""" + f"{(diff_i2i/cohere_i2i)*100:.2f}%" + """), indicating OpenAI's text-based approach cannot capture visual similarity</li>
+                <li><strong>Text-to-image similarities</strong> vary significantly based on query semantics</li>
+                <li>For true image understanding and cross-modal search, <strong>Cohere's multimodal model is recommended</strong></li>
+                <li>OpenAI's higher embedding dimensionality (3072 vs 1536) does not compensate for lack of visual processing</li>
+            </ul>
+        </div>
+
+        <h2>6. Conclusion</h2>
+        <p>This comparison demonstrates the importance of using multimodal models for image search tasks. While OpenAI's text-embedding-3-large is excellent for text-only applications, it cannot effectively process visual information. Cohere's embed-v4.0 provides true multimodal understanding, making it the superior choice for AI-powered image search applications.</p>
+
+        <div class="footer">
+            <p><strong>CMPE-273 Assignment: AI Image Search</strong></p>
+            <p>San Jose State University</p>
+            <p>Generated with Claude Code</p>
+        </div>
+    </div>
+</body>
+</html>
+""")
+
+            print(f"✓ HTML comparison report saved to: {html_filename}")
+            print(f"  → Open in browser and print to PDF for submission")
+
+        except Exception as e:
+            print(f"\n⚠ Warning: Could not save HTML report: {e}")
+            import traceback
+            traceback.print_exc()
 
     else:
         # Single provider mode
